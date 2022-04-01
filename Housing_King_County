@@ -1,4 +1,8 @@
-#We import our libraries
+# This is an exploratory data analysis project looking at Housing Prices in King County and the objects that affect their prices.
+# This project was part of the IBM Data Science Professional Certificated on Coursera
+
+
+#We imported the libraries we will use for this analysis
 
 import pandas as pd
 import matplotlib.pyplot as plt
@@ -10,10 +14,12 @@ from sklearn.linear_model import LinearRegression
 %matplotlib inline
 
 
+
 # We retrieve our data from a source and use pandas to put it into a data frame
 
 file_name='https://cf-courses-data.s3.us.cloud-object-storage.appdomain.cloud/IBMDeveloperSkillsNetwork-DA0101EN-SkillsNetwork/labs/FinalModule_Coursera/data/kc_house_data_NaN.csv'
 df=pd.read_csv(file_name)
+
 
 
 # Use the head function to determine the first 5 rows of our data frame
@@ -21,14 +27,17 @@ df=pd.read_csv(file_name)
 df.head()
 
 
+
 # Use the dtypes function to determine the types of data in our data frame
 
 df.dtypes
 
 
+
 # The describe function gives us a statistical summary of each column of our data frame
 
 df.describe()
+
 
 
 # We use the drop function to remove two identifier columns that we will not use in our calculations and verify they are removed
@@ -37,10 +46,12 @@ df.drop({"id", "Unnamed: 0"}, axis = 1, inplace=True)
 df.describe()
 
 
+
 # We use the null function to determine missing values in our data frame. We find that 13 missing values in bedroom and 10 missing in bathroom
 
 print("number of NaN values for the column bedrooms :", df['bedrooms'].isnull().sum())
 print("number of NaN values for the column bathrooms :", df['bathrooms'].isnull().sum())
+
 
 
 # We replace the null values with the mean of the columns and use the replace function to replace these values. Then, we verify that there are no missing values
@@ -55,9 +66,11 @@ print("number of NaN values for the column bedrooms :", df['bedrooms'].isnull().
 print("number of NaN values for the column bathrooms :", df['bathrooms'].isnull().sum())
 
 
+
 # We use the value count function to determine the number of unique floors and the to_frame function to view the results
 
 df['floors'].value_counts().to_frame()
+
 
 
 # We create a boxplot using the boxplot function from the seaborn library to determine the outliers of houses with and without a waterfront view
@@ -70,6 +83,7 @@ sns.boxplot(x="waterfront", y="price", data=df)
 sns.regplot(x="sqft_above", y="price", data=df)
 
 
+
 # We fit a linear regression model using the feature 'long' and caculate the R^2. We get the value 0.00046769430149007363
 
 X = df[['long']]
@@ -77,6 +91,7 @@ Y = df['price']
 lm = LinearRegression()
 lm.fit(X,Y)
 lm.score(X, Y)
+
 
 
 # We fit a linear regression model using the feature 'sqft_living' and caculate the R^2. We get the value 0.4928532179037931
@@ -88,6 +103,7 @@ lm.fit(X1,Y)
 lm.score(X1, Y)
 
 
+
 # We want to determine the R^2 of the listed features and the price. We calculated the value 0.6576569675583581
 
 features = df[["floors", "waterfront","lat" ,"bedrooms" ,"sqft_basement" ,"view" ,"bathrooms","sqft_living15","sqft_above","grade","sqft_living"]]
@@ -96,27 +112,27 @@ lm.fit(features, df['price'])
 lm.score(features, df['price'])
 
 
+
 # We created a list of tuples. Then, we used the tuples to create a pipeline object to predict price and calculate the r^2, which was 0.8753236078885457
 
 Input=[('scale',StandardScaler()),('polynomial', PolynomialFeatures(include_bias=False)),('model',LinearRegression())]
 
 pipe=Pipeline(Input)
 
-pipe.fit(features, df['price'])
+X = X.astype(float)
 
-ypipe=pipe.predict(features)
-ypipe[0:10]
+pipe.fit(X, Y)
 
-lm.fit(features, ypipe)
-
-print('The R-square is: ', lm.score(features, ypipe))
+print('The R-square is: ', pipe.score(X, Y))
 
 
-# We imported the modules
+
+# We imported the models we will be using to analyze testing and training data
 
 from sklearn.model_selection import cross_val_score
 from sklearn.model_selection import train_test_split
 print("done")
+
 
 
 # We split the data into training and testing sets. There are 3242 testing samples and 18371 training samples
@@ -132,9 +148,11 @@ print("number of test samples:", x_test.shape[0])
 print("number of training samples:",x_train.shape[0])
 
 
+
 # We imported the Ridge Regression model from sklearn
 
 from sklearn.linear_model import Ridge
+
 
 
 # We fit the training data into a ridge regression object and find the R^2 of the testing data
@@ -146,3 +164,17 @@ RidgeModel.fit(x_train, y_train)
 RidgeModel.score(x_test, y_test)
 
 
+
+# We performed a second order polynomial transformation on both the training data and testing data
+
+pr1=PolynomialFeatures()
+
+x_train_pr1=pr1.fit_transform(x_train)
+
+x_test_pr1=pr1.fit_transform(x_test)
+
+RidgeModel1=Ridge(alpha=1)
+
+RidgeModel.fit(x_train_pr1, y_train)
+
+RidgeModel.score(x_test_pr1, y_test)
